@@ -1,0 +1,594 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>Chapter 5. Virtual storage</title><meta name="generator" content="DocBook XSL Stylesheets V1.69.1"><link rel="start" href="index.html" title="Oracle VM VirtualBox®"><link rel="up" href="index.html" title="Oracle VM VirtualBox®"><link rel="prev" href="ch04.html" title="Chapter 4. Guest Additions"><link rel="next" href="ch06.html" title="Chapter 6. Virtual networking"><style type="text/css"><!--
+   body
+   {
+     font-family:  Verdana, Sans-serif, Arial, 'Trebuchet MS', 'Times New Roman';
+     font-size: small;
+   }
+   h2.title
+   {
+     font-family: Verdana, Sans-serif, Arial, 'Trebuchet MS', 'Times New Roman';
+     margin: 5px 0 0;
+     padding: 1px 5px 1px;
+     border: 1px solid #6b89d4;
+     -moz-border-radius: 0.3em;
+     background: #e6edff;
+   }
+   .titlepage
+   {
+     text-align: center;
+   }
+   .refsynopsisdiv, .refsect1, .refsect2, .refsect3
+   {
+     text-align: left;
+   }
+   .warning 
+   {
+     padding: 5px;
+     border: 1px solid #ff0011;
+     -moz-border-radius: 0.3em;
+     background: #ffbbbb;
+   }
+   .warning .title { margin: 0px 0px 5px 0px; }
+   .warning p { margin: 1px; }
+   .note 
+   {
+     padding: 1px 5px 1px;
+     border: 1px solid #84c43b;
+     -moz-border-radius: 0.3em;
+     background: #d7e9a7;
+   }
+   .note .title { margin: 0px 0px 5px 0px; }
+   .note p { margin: 1px; }
+   .cmdsynopsis
+   {
+     font-family: monospace;
+   }
+   .refsynopsisdiv        > .cmdsynopsis p, .refsect1        > .cmdsynopsis p,
+   .refsynopsisdiv .sect2 > .cmdsynopsis p, .refsect1 .sect2 > .cmdsynopsis p
+   {
+     margin-top: 0px;
+     margin-bottom: 0px;
+   }
+   .cmdsynopsis p
+   {
+     padding-left: 3.4em;
+     text-indent: -2.2em;
+   }
+   p.nextcommand
+   {
+     margin-top:    0px;
+     margin-bottom: 0px;
+   }
+   p.lastcommand
+   {
+     margin-top:    0px;
+   }
+   .refentry * h3
+   {
+     font-size: large;
+   }
+   .refentry * h4
+   {
+     font-size: larger;
+   }
+   .refentry * h5
+   {
+     font-size: larger;
+   }
+
+  --></style></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="chapter" lang="en"><div class="titlepage"><div><div><h2 class="title"><a name="storage"></a>Chapter 5. Virtual storage</h2></div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="sect1"><a href="ch05.html#harddiskcontrollers">5.1. Hard disk controllers: IDE, SATA (AHCI), SCSI, SAS, USB MSD, NVMe</a></span></dt><dt><span class="sect1"><a href="ch05.html#vdidetails">5.2. Disk image files (VDI, VMDK, VHD, HDD)</a></span></dt><dt><span class="sect1"><a href="ch05.html#vdis">5.3. The Virtual Media Manager</a></span></dt><dt><span class="sect1"><a href="ch05.html#hdimagewrites">5.4. Special image write modes</a></span></dt><dt><span class="sect1"><a href="ch05.html#diffimages">5.5. Differencing images</a></span></dt><dt><span class="sect1"><a href="ch05.html#cloningvdis">5.6. Cloning disk images</a></span></dt><dt><span class="sect1"><a href="ch05.html#iocaching">5.7. Host I/O caching</a></span></dt><dt><span class="sect1"><a href="ch05.html#storage-bandwidth-limit">5.8. Limiting bandwidth for disk images</a></span></dt><dt><span class="sect1"><a href="ch05.html#storage-cds">5.9. CD/DVD support</a></span></dt><dt><span class="sect1"><a href="ch05.html#storage-iscsi">5.10. iSCSI servers</a></span></dt></dl></div><p>As the virtual machine will most probably expect to see a hard disk
+  built into its virtual computer, VirtualBox must be able to present "real"
+  storage to the guest as a virtual hard disk. There are presently three
+  methods in which to achieve this:</p><div class="orderedlist"><ol type="1"><li><p>Most commonly, VirtualBox will use large image files on a real
+      hard disk and present them to a guest as a virtual hard disk. This is
+      described in <a href="ch05.html#vdidetails" title="5.2. Disk image files (VDI, VMDK, VHD, HDD)">Section 5.2, &#8220;Disk image files (VDI, VMDK, VHD, HDD)&#8221;</a>.</p></li><li><p>Alternatively, if you have iSCSI storage servers, you can attach
+      such a server to VirtualBox as well; this is described in <a href="ch05.html#storage-iscsi" title="5.10. iSCSI servers">Section 5.10, &#8220;iSCSI servers&#8221;</a>.</p></li><li><p>Finally, as an advanced feature, you can allow a virtual
+      machine to access one of your host disks directly; this advanced feature
+      is described in <a href="ch09.html#rawdisk" title="9.9.1. Using a raw host hard disk from a guest">Section 9.9.1, &#8220;Using a raw host hard disk from a guest&#8221;</a>.</p></li></ol></div><p>Each such virtual storage device (image file, iSCSI target or physical
+  hard disk) will need to be connected to the virtual hard disk controller
+  that VirtualBox presents to a virtual machine. This is explained in the next
+  section.</p><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="harddiskcontrollers"></a>5.1. Hard disk controllers: IDE, SATA (AHCI), SCSI, SAS, USB MSD, NVMe</h2></div></div></div><p>In a real PC, hard disks and CD/DVD drives are connected to a device
+    called hard disk controller which drives hard disk operation and data
+    transfers. VirtualBox can emulate the five most common types of hard disk
+    controllers typically found in today's PCs: IDE, SATA (AHCI), SCSI,
+    SAS, USB-based and NVMe mass storage devices.<sup>[<a name="idm2380" href="#ftn.idm2380">21</a>]</sup></p><div class="itemizedlist"><ul type="disc"><li><p><span class="bold"><strong>IDE (ATA)</strong></span> controllers are a
+          backwards compatible yet very advanced extension of the disk
+          controller in the IBM PC/AT (1984). Initially, this interface
+          worked only with hard disks, but was later extended to also support
+          CD-ROM drives and other types of removable media. In physical PCs,
+          this standard uses flat ribbon parallel cables with 40 or 80 wires.
+          Each such cable can connect two devices to a controller, which have
+          traditionally been called "master" and "slave". Typical PCs had
+          two connectors for such cables; as a result, support for up to four
+          IDE devices was most common.</p><p>In VirtualBox, each virtual machine may have one IDE
+          controller enabled, which gives you up to four virtual storage
+          devices that you can attach to the machine. (By default, one of
+          these four -- the secondary master -- is preconfigured to be the
+          machine's virtual CD/DVD drive, but this can be changed.<sup>[<a name="idm2387" href="#ftn.idm2387">22</a>]</sup>)</p><p>So even if your guest operating system has no support for SCSI
+          or SATA devices, it should always be able to see an IDE controller.
+          </p><p>You can also select which exact type of IDE controller
+          hardware VirtualBox should present to the virtual machine (PIIX3,
+          PIIX4 or ICH6). This makes no difference in terms of performance,
+          but if you import a virtual machine from another virtualization
+          product, the operating system in that machine may expect a
+          particular controller type and crash if it isn't found.</p><p>After you have created a new virtual machine with the "New
+          Virtual Machine" wizard of the graphical user interface, you will
+          typically see one IDE controller in the machine's "Storage" settings
+          where the virtual CD/DVD drive will be attached to one of the four
+          ports of this controller.</p></li><li><p><span class="bold"><strong>Serial ATA (SATA)</strong></span> is a newer
+          standard introduced in 2003. Compared to IDE, it supports both much
+          higher speeds and more devices per controller. Also, with
+          physical hardware, devices can be added and removed while the system
+          is running. The standard interface for SATA controllers is called
+          Advanced Host Controller Interface (<span class="bold"><strong>AHCI</strong></span>).</p><p>Like a real SATA controller, VirtualBox's virtual SATA
+          controller operates faster and also consumes fewer CPU resources than
+          the virtual IDE controller. Also, this allows you to connect up to
+          30 virtual hard disks to one machine instead of just three, as with
+          the VirtualBox IDE controller (with the DVD drive already attached).</p><p>For this reason, starting with version 3.2 and depending on
+          the selected guest operating system, VirtualBox uses SATA as the
+          default for newly created virtual machines. One virtual SATA
+          controller is created by default, and the default disk that is
+          created with a new VM is attached to this controller.</p><div class="warning" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Warning</h3><p>The entire SATA controller and the virtual disks attached
+              to it (including those in IDE compatibility mode) will not be
+              seen by operating systems that do not have device support for
+              AHCI. In particular, <span class="bold"><strong>there is no support
+              for AHCI in Windows before Windows Vista</strong></span>, so Windows
+              XP (even SP3) will not see such disks unless you install
+              additional drivers. It is possible to switch from IDE to SATA
+              after installation by installing the SATA drivers and changing
+              the controller type in the VM settings dialog.<sup>[<a name="idm2401" href="#ftn.idm2401">23</a>]</sup></p></div><p>To add a SATA controller to a machine for which it has not
+          been enabled by default (either because it was created by an earlier
+          version of VirtualBox, or because SATA is not supported by default
+          by the selected guest operating system), go to the "Storage" page of
+          the machine's settings dialog, click on the "Add Controller" button
+          under the "Storage Tree" box and then select "Add SATA Controller".
+          After this, the additional controller will appear as a separate PCI
+          device in the virtual machine, and you can add virtual disks to
+          it.</p><p>To change the IDE compatibility mode settings for the SATA
+          controller, please see <a href="ch08.html#vboxmanage-storagectl" title="8.19. VBoxManage storagectl">Section 8.19, &#8220;VBoxManage storagectl&#8221;</a>.</p></li><li><p><span class="bold"><strong>SCSI</strong></span> is another established
+          industry standard, standing for "Small Computer System Interface".
+          SCSI was standardized as early as 1986 as a generic interface for
+          data transfer between all kinds of devices, including storage
+          devices. Today SCSI is still used for connecting hard disks and tape
+          devices, but it has mostly been displaced in commodity hardware. It
+          is still in common use in high-performance workstations and
+          servers.</p><p>Primarily for compatibility with other virtualization
+          software, VirtualBox optionally supports LSI Logic and BusLogic SCSI
+          controllers, to each of which up to 15 virtual hard disks can be
+          attached.</p><p>To enable a SCSI controller, on the "Storage" page of a
+          virtual machine's settings dialog, click on the "Add Controller"
+          button under the "Storage Tree" box and then select "Add SCSI
+          Controller". After this, the additional controller will appear as a
+          separate PCI device in the virtual machine.</p><div class="warning" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Warning</h3><p>As with the other controller types, a SCSI controller will
+              only be seen by operating systems with device support for it.
+              Windows 2003 and later ships with drivers for the LSI Logic
+              controller, while Windows NT 4.0 and Windows 2000 ships with
+              drivers for the BusLogic controller. Windows XP ships with
+              drivers for neither.</p></div></li><li><p><span class="bold"><strong>Serial Attached SCSI (SAS)</strong></span> is
+          another bus standard which uses the SCSI command set. As opposed to
+          SCSI, however, with physical devices, serial cables are used instead
+          of parallel ones, which simplifies physical device connections. In
+          some ways, therefore, SAS is to SCSI what SATA is to IDE: it allows
+          for more reliable and faster connections.</p><p>To support high-end guests which require SAS controllers,
+          VirtualBox emulates a LSI Logic SAS controller, which can be enabled
+          much the same way as a SCSI controller. At this time, up to eight
+          devices can be connected to the SAS controller.</p><div class="warning" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Warning</h3><p>As with SATA, the SAS controller will only be seen by
+            operating systems with device support for it. In particular,
+            <span class="bold"><strong>there is no support for SAS in Windows
+            before Windows Vista</strong></span>, so Windows XP (even SP3) will not
+            see such disks unless you install additional drivers.</p></div></li><li><p>The <span class="bold"><strong>USB mass storage device class</strong></span>
+          is a standard to connect external storage devices like hard disks or flash
+          drives to a host through USB. All major operating systems support these
+          devices for a long time and ship generic drivers making third-party
+          drivers superfluous. In particular legacy operating systems without
+          support for SATA controllers may benefit from USB mass storage devices.</p><p>The virtual USB storage controller offered by VirtualBox works
+          different than the other storage controller types: When storage
+          controllers appear as a single PCI device to the guest with multiple
+          disks attached to it, the USB-based storage controller does not appear
+          as virtual storage controller. Each disk attached to the controller
+          appears as a dedicated USB device to the guest.</p><div class="warning" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Warning</h3><p>Booting from drives attached via USB is when EFI is used as the
+              BIOS lacks USB support.</p></div></li><li><p><span class="bold"><strong>Non volatile memory express (NVMe)</strong></span>
+          is a very recent standard which emerged in 2011 connecting non volatile
+          memory (NVM) directly over PCI express to lift the bandwidth limitation
+          of the previously used SATA protocol for SSDs. Unlike other standards
+          the command set is very simple to achieve maximum throughput and is
+          not compatible with ATA or SCSI. Operating systems need to support NVMe
+          devices to make use of them. For example Windows 8.1 added native NVMe
+          support, for Windows 7 native support was added with an update.
+          <sup>[<a name="idm2430" href="#ftn.idm2430">24</a>]</sup></p><div class="warning" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Warning</h3><p>Booting from drives attached via NVMe is only supported when
+            EFI is used as the BIOS lacks the appropriate driver.</p></div></li></ul></div><p>In summary, VirtualBox gives you the following categories of virtual
+    storage slots:</p><div class="orderedlist"><ol type="1"><li><p>four slots attached to the traditional IDE controller, which
+          are always present (one of which typically is a virtual CD/DVD
+          drive);</p></li><li><p>30 slots attached to the SATA controller, if enabled and
+          supported by the guest operating system;</p></li><li><p>15 slots attached to the SCSI controller, if enabled and
+          supported by the guest operating system;</p></li><li><p>eight slots attached to the SAS controller, if enabled and
+          supported by the guest operating system.</p></li><li><p>eight slots attached to the virtual USB controller, if enabled and
+          supported by the guest operating system.</p></li><li><p>up to 255 slots attached to the NVMe controller, if enabled and
+          supported by the guest operating system.</p></li></ol></div><p>Given this large choice of storage controllers, you may ask yourself
+    which one to choose. In general, you should avoid IDE unless it is the
+    only controller supported by your guest. Whether you use SATA, SCSI or SAS
+    does not make any real difference. The variety of controllers is only
+    supplied for VirtualBox for compatibility with existing hardware and other
+    hypervisors.</p></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="vdidetails"></a>5.2. Disk image files (VDI, VMDK, VHD, HDD)</h2></div></div></div><p>Disk image files reside on the host system and are seen by the guest
+    systems as hard disks of a certain geometry. When a guest operating system
+    reads from or writes to a hard disk, VirtualBox redirects the request to
+    the image file.</p><p>Like a physical disk, a virtual disk has a size (capacity), which
+    must be specified when the image file is created. As opposed to a physical
+    disk however, VirtualBox allows you to expand an image file after
+    creation, even if it has data already; see <a href="ch08.html#vboxmanage-modifyvdi" title="8.23. VBoxManage modifymedium">Section 8.23, &#8220;VBoxManage modifymedium&#8221;</a> for details.<sup>[<a name="idm2454" href="#ftn.idm2454">25</a>]</sup></p><p>VirtualBox supports four variants of disk image files:</p><div class="itemizedlist"><ul type="disc"><li><p>Normally, VirtualBox uses its own container format for guest
+          hard disks -- Virtual Disk Image (VDI) files. In particular, this
+          format will be used when you create a new virtual machine with a new
+          disk.</p></li><li><p>VirtualBox also fully supports the popular and open VMDK
+          container format that is used by many other virtualization products,
+          in particular, by VMware.<sup>[<a name="idm2462" href="#ftn.idm2462">26</a>]</sup></p></li><li><p>VirtualBox also fully supports the VHD format used by
+          Microsoft.</p></li><li><p>Image files of Parallels version 2 (HDD format) are also
+          supported.<sup>[<a name="idm2468" href="#ftn.idm2468">27</a>]</sup> For lack of documentation of the format, newer formats
+          (3 and 4) are not supported. You can however convert such image
+          files to version 2 format using tools provided by Parallels.</p></li></ul></div><p>Irrespective of the disk capacity and format, as briefly mentioned
+    in <a href="ch01.html#gui-createvm" title="1.7. Creating your first virtual machine">Section 1.7, &#8220;Creating your first virtual machine&#8221;</a>, there are two options of how to create
+    a disk image: fixed-size or dynamically allocated.</p><div class="itemizedlist"><ul type="disc"><li><p>If you create a <span class="bold"><strong>fixed-size
+        image</strong></span>, an image file will be created on your host system
+        which has roughly the same size as the virtual disk's capacity. So,
+        for a 10G disk, you will have a 10G file. Note that the creation of a
+        fixed-size image can take a long time depending on the size of the
+        image and the write performance of your hard disk.</p></li><li><p>For more flexible storage management, use a <span class="bold"><strong>dynamically allocated image</strong></span>. This will
+        initially be very small and not occupy any space for unused virtual
+        disk sectors, but will grow every time a disk sector is written to for
+        the first time, until the drive reaches the maximum capacity chosen
+        when the drive was created. While this format takes less space
+        initially, the fact that VirtualBox needs to expand the image file
+        consumes additional computing resources, so until the disk file size has
+        stabilized, write operations may be slower than with fixed size disks.
+        However, after a time the rate of growth will slow and the average penalty
+        for write operations will be negligible.</p></li></ul></div></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="vdis"></a>5.3. The Virtual Media Manager</h2></div></div></div><p>VirtualBox keeps track of all the hard disk, CD/DVD-ROM and floppy
+    disk images which are in use by virtual machines. These are often referred
+    to as "known media" and come from two sources:</p><div class="itemizedlist"><ul type="disc"><li><p>all media currently attached to virtual machines;</p></li><li><p>"registered" media for compatibility with VirtualBox versions
+          older than version 4.0. For details about how media registration has
+          changed with version 4.0, please refer to <a href="ch10.html#vboxconfigdata" title="10.1. Where VirtualBox stores its files">Section 10.1, &#8220;Where VirtualBox stores its files&#8221;</a>.</p></li></ul></div><p>The known media can be viewed and changed in the <span class="bold"><strong>Virtual Media Manager</strong></span>, which you can access from
+    the "File" menu in the VirtualBox main window:</p><div class="mediaobject" align="center"><table border="0" summary="manufactured viewport for HTML img" cellspacing="0" cellpadding="0" width="425"><tr><td align="center"><img src="images/virtual-disk-manager.png" align="middle" width="425"></td></tr></table></div><p>The known media are conveniently grouped in three tabs for
+    the three possible formats. These formats are:</p><div class="itemizedlist"><ul type="disc"><li><p>Hard disk images, either in VirtualBox's own Virtual Disk Image
+        (VDI) format or in the third-party formats listed in the previous
+        chapter;</p></li><li><p>CD/DVD images in standard ISO format;</p></li><li><p>floppy images in standard RAW format.</p></li></ul></div><p>As you can see in the screenshot above, for each image, the Virtual
+    Media Manager shows you the full path of the image file and other
+    information, such as the virtual machine the image is currently attached
+    to, if any.</p><p>The Virtual Media Manager allows you to</p><div class="itemizedlist"><ul type="disc"><li><p><span class="bold"><strong>remove</strong></span> an image from the
+        registry (and optionally delete the image file when doing so);</p></li><li><p><span class="bold"><strong>"release"</strong></span> an image, that is,
+        detach it from a virtual machine if it is currently attached to one as
+        a virtual hard disk.</p></li><li><p><span class="bold"><strong>copy</strong></span> a virtual hard disk, to 
+        another one - target type can be different, options are - VDI, VHD or VMDK.</p></li><li><p><span class="bold"><strong>modify</strong></span> the attributes of the 
+        disk image file - available options are : Normal, Immutable,
+        Writethrough, Shareable, Multi-attach.</p></li><li><p><span class="bold"><strong>refresh</strong></span> the values for the displayed     
+        attributes of the disk image currently selected in the window.</p></li></ul></div><p>These commands are accessible once a medium has been selected either by selecting 
+    from the options shown at the top of the window, or by right-clicking the medium
+    and selecting from the options shown on the drop-down menu.</p><p>Starting with version 4.0, to <span class="bold"><strong>create new disk
+    images,</strong></span> please use the "Storage" page in a virtual machine's
+    settings dialog because disk images are now by default stored in each
+    machine's own folder.</p><p>Hard disk image files can be copied onto other host systems and
+    imported into virtual machines there, although certain guest systems
+    (notably Windows 2000 and XP) will require that the new virtual machine be
+    set up in a similar way to the old one.</p><div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3><p>Do not simply make copies of virtual disk images. If you import
+        such a second copy into a virtual machine, VirtualBox will complain
+        with an error, since VirtualBox assigns a unique identifier (UUID) to
+        each disk image to make sure it is only used once. See <a href="ch05.html#cloningvdis" title="5.6. Cloning disk images">Section 5.6, &#8220;Cloning disk images&#8221;</a> for instructions on this matter. Also, if you
+        want to copy a virtual machine to another system, VirtualBox has an
+        import/export facility that might be better suited for your needs; see
+        <a href="ch01.html#ovf" title="1.14. Importing and exporting virtual machines">Section 1.14, &#8220;Importing and exporting virtual machines&#8221;</a>.</p></div></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="hdimagewrites"></a>5.4. Special image write modes</h2></div></div></div><p>For each virtual disk image supported by VirtualBox, you can
+    determine separately how it should be affected by write operations from a
+    virtual machine and snapshot operations. This applies to all of the
+    aforementioned image formats (VDI, VMDK, VHD or HDD) and irrespective of
+    whether an image is fixed-size or dynamically allocated.</p><p>By default, images are in "normal" mode. To mark an existing image
+    with one of the non-standard modes listed below, use
+    <code class="computeroutput">VBoxManage modifyhd</code>; see <a href="ch08.html#vboxmanage-modifyvdi" title="8.23. VBoxManage modifymedium">Section 8.23, &#8220;VBoxManage modifymedium&#8221;</a>. Alternatively, use VBoxManage to attach
+    the image to a VM and use the <code class="computeroutput">--mtype</code>
+    argument; see <a href="ch08.html#vboxmanage-storageattach" title="8.18. VBoxManage storageattach">Section 8.18, &#8220;VBoxManage storageattach&#8221;</a>.</p><div class="orderedlist"><ol type="1"><li><p>With <span class="bold"><strong>normal images</strong></span> (the default
+        setting), there are no restrictions on how guests can read from and
+        write to the disk.</p><p>When you take a snapshot of your virtual machine as described in
+        <a href="ch01.html#snapshots" title="1.10. Snapshots">Section 1.10, &#8220;Snapshots&#8221;</a>, the state of such a "normal hard disk"
+        will be recorded together with the snapshot, and when reverting to the
+        snapshot, its state will be fully reset.</p><p>(Technically, strictly speaking, the image file itself is not
+        "reset". Instead, when a snapshot is taken, VirtualBox "freezes" the
+        image file and no longer writes to it. For the write operations from
+        the VM, a second, "differencing" image file is created which receives
+        only the changes to the original image; see the next section for
+        details.)</p><p>While you can attach the same "normal" image to more than one
+        virtual machine, only one of these virtual machines attached to the
+        same image file can be executed simultaneously, as otherwise there
+        would be conflicts if several machines write to the same image
+        file.<sup>[<a name="idm2543" href="#ftn.idm2543">28</a>]</sup></p></li><li><p>By contrast, <span class="bold"><strong>write-through hard
+        disks</strong></span> are completely unaffected by snapshots: their state
+        is <span class="emphasis"><em>not</em></span> saved when a snapshot is taken, and not
+        restored when a snapshot is restored.</p></li><li><p><span class="bold"><strong>Shareable hard disks</strong></span> are a
+        variant of write-through hard disks. In principle they behave exactly
+        the same, i.e. their state is <span class="emphasis"><em>not</em></span> saved when a
+        snapshot is taken, and not restored when a snapshot is restored. The
+        difference only shows if you attach such disks to several VMs.
+        Shareable disks may be attached to several VMs which may run
+        concurrently. This makes them suitable for use by cluster filesystems
+        between VMs and similar applications which are explicitly prepared to
+        access a disk concurrently. Only fixed size images can be used in this
+        way, and dynamically allocated images are rejected.</p><div class="warning" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Warning</h3><p>This is an expert feature, and misuse can lead to data loss
+            -- regular filesystems are not prepared to handle simultaneous
+            changes by several parties.</p></div></li><li><p>Next, <span class="bold"><strong>immutable images</strong></span> only
+        remember write accesses temporarily while the virtual machine is
+        running; all changes are lost when the virtual machine is powered on
+        the next time. As a result, as opposed to "normal" images, the same
+        immutable image can be used with several virtual machines without
+        restrictions.</p><p><span class="emphasis"><em>Creating</em></span> an immutable image makes little
+        sense since it would be initially empty and lose its contents with
+        every machine restart (unless you really want to have a disk that is
+        always unformatted when the machine starts up). As a result, normally,
+        you would first create a "normal" image and then, when you deem its
+        contents useful, later mark it immutable.</p><p>If you take a snapshot of a machine with immutable images, then
+        on every machine power-up, those images are reset to the state of the
+        last (current) snapshot (instead of the state of the original
+        immutable image).</p><div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3><p>As a special exception, immutable images are
+          <span class="emphasis"><em>not</em></span> reset if they are attached to a machine
+          in saved state or whose last snapshot was taken while the machine
+          was running (a so-called "online" snapshot). As a result, if the
+          machine's current snapshot is such an "online" snapshot, its
+          immutable images behave exactly like the "normal" images described
+          previously. To re-enable the automatic resetting of such images,
+          delete the current snapshot of the machine.</p></div><p>Again, technically, VirtualBox never writes to an immutable
+        image directly at all. All write operations from the machine will be
+        directed to a differencing image; the next time the VM is powered on,
+        the differencing image is reset so that every time the VM starts, its
+        immutable images have exactly the same content.<sup>[<a name="idm2566" href="#ftn.idm2566">29</a>]</sup> The differencing image is only reset when the machine is
+        powered on from within VirtualBox, not when you reboot by requesting a
+        reboot from within the machine. This is also why immutable images
+        behave as described above when snapshots are also present, which use
+        differencing images as well.</p><p>If the automatic discarding of the differencing image on VM
+        startup does not fit your needs, you can turn it off using the
+        <code class="computeroutput">autoreset</code> parameter of
+        <code class="computeroutput">VBoxManage modifyhd</code>; see <a href="ch08.html#vboxmanage-modifyvdi" title="8.23. VBoxManage modifymedium">Section 8.23, &#8220;VBoxManage modifymedium&#8221;</a> for details.</p></li><li><p>An image in <span class="bold"><strong>multiattach mode</strong></span>
+        can be attached to more than one virtual machine at the same time,
+        even if these machines are running simultaneously. For each virtual
+        machine to which such an image is attached, a differencing image is
+        created. As a result, data that is written to such a virtual disk by
+        one machine is not seen by the other machines to which the image is
+        attached; each machine creates its own write history of the
+        multiattach image.</p><p>Technically, a "multiattach" image behaves identically to an
+        "immutable" image except the differencing image is not reset every
+        time the machine starts.</p><p>This mode is useful for sharing files which are almost never
+        written, for instance picture galleries, where every guest changes
+        only a small amount of data and the majority of the disk content
+        remains unchanged. The modified blocks are stored in differencing
+        images which remain relatively small and the shared content is stored
+        only once at the host.</p></li><li><p>Finally, the <span class="bold"><strong>read-only image</strong></span> is
+        used automatically for CD/DVD images, since CDs/DVDs can never be
+        written to.</p></li></ol></div><p>To illustrate the differences between the various types with respect
+    to snapshots: Assume you have installed your guest operating system in
+    your VM, and you have taken a snapshot. Imagine you have accidentally
+    infected your VM with a virus and would like to go back to the snapshot.
+    With a normal hard disk image, you simply restore the snapshot, and the
+    earlier state of your hard disk image will be restored as well (and your
+    virus infection will be undone). With an immutable hard disk, all it takes
+    is to shut down and power on your VM, and the virus infection will be
+    discarded. With a write-through image however, you cannot easily undo the
+    virus infection by means of virtualization, but will have to disinfect
+    your virtual machine like a real computer.</p><p>Still, you might find write-through images useful if you want to
+    preserve critical data irrespective of snapshots, and since you can attach
+    more than one image to a VM, you may want to have one immutable for the
+    operating system and one write-through for your data files.</p></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="diffimages"></a>5.5. Differencing images</h2></div></div></div><p>The previous section hinted at differencing images and how they are
+    used with snapshots, immutable images and multiple disk attachments. For
+    the inquisitive VirtualBox user, this section describes in more detail how
+    they work.</p><p>A differencing image is a special disk image that only holds the
+    differences to another image. A differencing image by itself is useless,
+    it must always refer to another image. The differencing image is then
+    typically referred to as a "child", which holds the differences to its
+    "parent".</p><p>When a differencing image is active, it receives all write
+    operations from the virtual machine instead of its parent. The
+    differencing image only contains the sectors of the virtual hard disk that
+    have changed since the differencing image was created. When the machine
+    reads a sector from such a virtual hard disk, it looks into the
+    differencing image first. If the sector is present, it is returned from
+    there; if not, VirtualBox looks into the parent. In other words, the
+    parent becomes "read-only"; it is never written to again, but it is read
+    from if a sector has not changed.</p><p>Differencing images can be chained. If another differencing image is
+    created for a virtual disk that already has a differencing image, then it
+    becomes a "grandchild" of the original parent. The first differencing
+    image then becomes read-only as well, and write operations only go to the
+    second-level differencing image. When reading from the virtual disk,
+    VirtualBox needs to look into the second differencing image first, then
+    into the first if the sector was not found, and then into the original
+    image.</p><p>There can be an unlimited number of differencing images, and each
+    image can have more than one child. As a result, the differencing images
+    can form a complex tree with parents, "siblings" and children, depending
+    on how complex your machine configuration is. Write operations always go
+    to the one "active" differencing image that is attached to the machine,
+    and for read operations, VirtualBox may need to look up all the parents in
+    the chain until the sector in question is found. You can look at such a
+    tree in the Virtual Media Manager:</p><div class="mediaobject" align="center"><table border="0" summary="manufactured viewport for HTML img" cellspacing="0" cellpadding="0" width="425"><tr><td align="center"><img src="images/virtual-disk-manager2.png" align="middle" width="425"></td></tr></table></div><p>In all of these situations, from the point of view of the virtual
+    machine, the virtual hard disk behaves like any other disk. While the
+    virtual machine is running, there is a slight run-time I/O overhead
+    because VirtualBox might need to look up sectors several times. This is
+    not noticeable however since the tables with sector information are always
+    kept in memory and can be looked up quickly.</p><p>Differencing images are used in the following
+    situations:</p><div class="orderedlist"><ol type="1"><li><p><span class="bold"><strong>Snapshots.</strong></span> When you create a
+          snapshot, as explained in the previous section, VirtualBox "freezes"
+          the images attached to the virtual machine and creates differencing
+          images for each of them (to be precise: one for each image that is
+          not in "write-through" mode). From the point of view of the virtual
+          machine, the virtual disks continue to operate before, but all write
+          operations go into the differencing images. Each time you create
+          another snapshot, for each hard disk attachment, another
+          differencing image is created and attached, forming a chain or
+          tree.</p><p>In the above screenshot, you see that the original disk image
+          is now attached to a snapshot, representing the state of the disk
+          when the snapshot was taken.</p><p>If you now <span class="bold"><strong>restore</strong></span> a snapshot
+          -- that is, if you want to go back to the exact machine state that
+          was stored in the snapshot --, the following happens:</p><div class="orderedlist"><ol type="a"><li><p>VirtualBox copies the virtual machine settings that were
+                copied into the snapshot back to the virtual machine. As a
+                result, if you have made changes to the machine configuration
+                since taking the snapshot, they are undone.</p></li><li><p>If the snapshot was taken while the machine was running,
+                it contains a saved machine state, and that state is restored
+                as well; after restoring the snapshot, the machine will then
+                be in "Saved" state and resume execution from there when it is
+                next started. Otherwise the machine will be in "Powered Off"
+                state and do a full boot.</p></li><li><p>For each disk image attached to the machine, the
+                differencing image holding all the write operations since the
+                current snapshot was taken is thrown away, and the original
+                parent image is made active again. (If you restored the "root"
+                snapshot, then this will be the root disk image for each
+                attachment; otherwise, some other differencing image descended
+                from it.) This effectively restores the old machine
+                state.</p></li></ol></div><p>If you later <span class="bold"><strong>delete</strong></span> a
+          snapshot in order to free disk space, for each disk attachment, one
+          of the differencing images becomes obsolete. In this case, the
+          differencing image of the disk attachment cannot simply be deleted.
+          Instead, VirtualBox needs to look at each sector of the differencing
+          image and needs to copy it back into its parent; this is called
+          "merging" images and can be a potentially lengthy process, depending
+          on how large the differencing image is. It can also temporarily need
+          a considerable amount of extra disk space, before the differencing
+          image obsoleted by the merge operation is deleted.</p></li><li><p><span class="bold"><strong>Immutable images.</strong></span> When an
+          image is switched to "immutable" mode, a differencing image is
+          created as well. As with snapshots, the parent image then becomes
+          read-only, and the differencing image receives all the write
+          operations. Every time the virtual machine is started, all the
+          immutable images which are attached to it have their respective
+          differencing image thrown away, effectively resetting the virtual
+          machine's virtual disk with every restart.</p></li></ol></div></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="cloningvdis"></a>5.6. Cloning disk images</h2></div></div></div><p>You can duplicate hard disk image files on the same host to quickly
+    produce a second virtual machine with the same operating system setup.
+    However, you should <span class="emphasis"><em>only</em></span> make copies of virtual disk
+    images using the utility supplied with VirtualBox; see <a href="ch08.html#vboxmanage-clonevdi" title="8.24. VBoxManage clonemedium">Section 8.24, &#8220;VBoxManage clonemedium&#8221;</a>. This is because VirtualBox assigns a
+    unique identity number (UUID) to each disk image, which is also stored
+    inside the image, and VirtualBox will refuse to work with two images that
+    use the same number. If you do accidentally try to re-import a disk image
+    which you copied normally, you can make a second copy using VirtualBox's
+    utility and import that instead.</p><p>Note that newer Linux distributions identify the boot hard disk from
+    the ID of the drive. The ID VirtualBox reports for a drive is determined
+    from the UUID of the virtual disk image. So if you clone a disk image and
+    try to boot the copied image the guest might not be able to determine its
+    own boot disk as the UUID changed. In this case you have to adapt the disk
+    ID in your boot loader script (for example
+    <code class="computeroutput">/boot/grub/menu.lst</code>). The disk ID looks
+    like this:</p><pre class="screen">scsi-SATA_VBOX_HARDDISK_VB5cfdb1e2-c251e503</pre><p>The ID for the copied image can be determined with </p><pre class="screen">hdparm -i /dev/sda</pre></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="iocaching"></a>5.7. Host I/O caching</h2></div></div></div><p>Starting with version 3.2, VirtualBox can optionally disable the I/O
+    caching that the host operating system would otherwise perform on disk
+    image files.</p><p>Traditionally, VirtualBox has opened disk image files as normal
+    files, which results in them being cached by the host operating system
+    like any other file. The main advantage of this is speed: when the guest
+    OS writes to disk and the host OS cache uses delayed writing, the write
+    operation can be reported as completed to the guest OS quickly while the
+    host OS can perform the operation asynchronously. Also, when you start a
+    VM a second time and have enough memory available for the OS to use for
+    caching, large parts of the virtual disk may be in system memory, and the
+    VM can access the data much faster.</p><p>Note that this applies only to image files; buffering never occurred
+    for virtual disks residing on remote iSCSI storage, which is the more common
+    scenario in enterprise-class setups (see <a href="ch05.html#storage-iscsi" title="5.10. iSCSI servers">Section 5.10, &#8220;iSCSI servers&#8221;</a>).</p><p>While buffering is a useful default setting for virtualizing a few
+    machines on a desktop computer, there are some disadvantages to this
+    approach:</p><div class="orderedlist"><ol type="1"><li><p>Delayed writing through the host OS cache is less secure. When
+          the guest OS writes data, it considers the data written even though
+          it has not yet arrived on a physical disk. If for some reason the
+          write does not happen (power failure, host crash), the likelihood of
+          data loss increases.</p></li><li><p>Disk image files tend to be very large. Caching them can
+          therefore quickly use up the entire host OS cache. Depending on the
+          efficiency of the host OS caching, this may slow down the host
+          immensely, especially if several VMs run at the same time. For
+          example, on Linux hosts, host caching may result in Linux delaying
+          all writes until the host cache is nearly full and then writing out
+          all these changes at once, possibly stalling VM execution for
+          minutes. This can result in I/O errors in the guest as I/O requests
+          time out there.</p></li><li><p>Physical memory is often wasted as guest operating systems
+          typically have their own I/O caches, which may result in the data
+          being cached twice (in both the guest and the host caches) for
+          little effect.</p></li></ol></div><p>If you decide to disable host I/O caching for the above reasons,
+    VirtualBox uses its own small cache to buffer writes, but no read caching
+    since this is typically already performed by the guest OS. In addition,
+    VirtualBox fully supports asynchronous I/O for its virtual SATA, SCSI and
+    SAS controllers through multiple I/O threads.</p><p>Since asynchronous I/O is not supported by IDE controllers, for
+    performance reasons, you may want to leave host caching enabled for your
+    VM's virtual IDE controllers.</p><p>For this reason, VirtualBox allows you to configure whether the host
+    I/O cache is used for each I/O controller separately. Either uncheck the
+    "Use host I/O cache" box in the "Storage" settings for a given virtual
+    storage controller, or use the following VBoxManage command to disable the
+    host I/O cache for a virtual storage controller:</p><pre class="screen">VBoxManage storagectl "VM name" --name &lt;controllername&gt; --hostiocache off</pre><p>See <a href="ch08.html#vboxmanage-storagectl" title="8.19. VBoxManage storagectl">Section 8.19, &#8220;VBoxManage storagectl&#8221;</a> for details.</p><p>For the above reasons also, VirtualBox now uses SATA controllers by
+    default for new virtual machines.</p></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="storage-bandwidth-limit"></a>5.8. Limiting bandwidth for disk images</h2></div></div></div><p>Starting with version 4.0, VirtualBox allows for limiting the
+    maximum bandwidth used for asynchronous I/O. Additionally it supports
+    sharing limits through bandwidth groups for several images. It is possible
+    to have more than one such limit.</p><p>Limits are configured through
+    <code class="computeroutput">VBoxManage</code>. The example below creates a
+    bandwidth group named "Limit", sets the limit to 20 MB/s and assigns the
+    group to the attached disks of the VM:</p><pre class="screen">VBoxManage bandwidthctl "VM name" add Limit --type disk --limit 20M
+VBoxManage storageattach "VM name" --storagectl "SATA" --port 0 --device 0 --type hdd
+                                   --medium disk1.vdi --bandwidthgroup Limit
+VBoxManage storageattach "VM name" --storagectl "SATA" --port 1 --device 0 --type hdd
+                                   --medium disk2.vdi --bandwidthgroup Limit</pre><p>All disks in a group share the bandwidth limit, meaning that in the
+    example above the bandwidth of both images combined can never exceed 20
+    MB/s. However, if one disk doesn't require bandwidth the other can use the
+    remaining bandwidth of its group.</p><p>The limits for each group can be changed while the VM is running,
+    with changes being picked up immediately. The example below changes the
+    limit for the group created in the example above to 10 MB/s:</p><pre class="screen">VBoxManage bandwidthctl "VM name" set Limit --limit 10M</pre></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="storage-cds"></a>5.9. CD/DVD support</h2></div></div></div><p>The virtual CD/DVD drive(s) by default support only reading. The
+    medium configuration is changeable at runtime. You can select between
+    three options to provide the medium data:</p><div class="itemizedlist"><ul type="disc"><li><p><span class="bold"><strong>Host Drive</strong></span> defines that the
+          guest can read from the medium in the host drive.</p></li><li><p><span class="bold"><strong>Image file</strong></span> (typically an ISO
+          file) gives the guest read-only access to the data in the
+          image.</p></li><li><p><span class="bold"><strong>Empty</strong></span> stands for a drive
+          without an inserted medium.</p></li></ul></div><p>Changing between the above, or changing a medium in the host drive
+    that is accessed by a machine, or changing an image file will signal a
+    medium change to the guest operating system, which can then react to the
+    change (e.g. by starting an installation program).</p><p>Medium changes can be prevented by the guest, and VirtualBox
+    reflects that by locking the host drive if appropriate. You can force a
+    medium removal in such situations via the VirtualBox GUI or the VBoxManage
+    command line tool. Effectively this is the equivalent of the emergency
+    eject which many CD/DVD drives provide, with all associated side effects:
+    the guest OS can issue error messages, just like on real hardware, and
+    guest applications may misbehave. Use this with caution.</p><div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3><p>The identification string of the drive provided to the guest
+        (which, in the guest, would be displayed by configuration tools such
+        as the Windows Device Manager) is always "VBOX CD-ROM", irrespective
+        of the current configuration of the virtual drive. This is to prevent
+        hardware detection from being triggered in the guest operating system
+        every time the configuration is changed.</p></div><p>The standard CD/DVD emulation allows for reading standard data CD
+    and DVD formats only. As an experimental feature, for additional
+    capabilities, it is possible to give the guest direct access to the CD/DVD
+    host drive by enabling "passthrough" mode. Depending on the host hardware,
+    this may enable three things to work, potentially:</p><div class="itemizedlist"><ul type="disc"><li><p>CD/DVD writing from within the guest, if the host DVD drive is
+          a CD/DVD writer;</p></li><li><p>playing audio CDs;</p></li><li><p>playing encrypted DVDs.</p></li></ul></div><p>There is a "Passthrough" checkbox in the GUI dialog for configuring
+    the media attached to a storage controller, or you can use the
+    <code class="computeroutput">--passthrough</code> option with
+    <code class="computeroutput">VBoxManage storageattach</code>; see <a href="ch08.html#vboxmanage-storageattach" title="8.18. VBoxManage storageattach">Section 8.18, &#8220;VBoxManage storageattach&#8221;</a> for details.</p><p>Even if pass-through is enabled, unsafe commands, such as updating
+    the drive firmware, will be blocked. Video CD formats are never supported,
+    not even in passthrough mode, and cannot be played from a virtual
+    machine.</p><p>On Solaris hosts, pass-through requires running VirtualBox with real
+    root permissions due to security measures enforced by the host.</p></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="storage-iscsi"></a>5.10. iSCSI servers</h2></div></div></div><p>iSCSI stands for "Internet SCSI" and is a standard that allows for
+    using the SCSI protocol over Internet (TCP/IP) connections. Especially
+    with the advent of Gigabit Ethernet, it has become affordable to attach
+    iSCSI storage servers simply as remote hard disks to a computer network.
+    In iSCSI terminology, the server providing storage resources is called an
+    "iSCSI target", while the client connecting to the server and accessing
+    its resources is called "iSCSI initiator".</p><p>VirtualBox can transparently present iSCSI remote storage to a
+    virtual machine as a virtual hard disk. The guest operating system will
+    not see any difference between a virtual disk image (VDI file) and an
+    iSCSI target. To achieve this, VirtualBox has an integrated iSCSI
+    initiator.</p><p>VirtualBox's iSCSI support has been developed according to the iSCSI
+    standard and should work with all standard-conforming iSCSI targets. To
+    use an iSCSI target with VirtualBox, you must use the command line; see
+    <a href="ch08.html#vboxmanage-storageattach" title="8.18. VBoxManage storageattach">Section 8.18, &#8220;VBoxManage storageattach&#8221;</a>.</p></div><div class="footnotes"><br><hr width="100" align="left"><div class="footnote"><p><sup>[<a name="ftn.idm2380" href="#idm2380">21</a>] </sup>SATA support was added with VirtualBox 1.6; experimental SCSI
+        support was added with 2.1 and fully implemented with 2.2. Generally,
+        storage attachments were made much more flexible with VirtualBox 3.1;
+        see below. Support for the LSI Logic SAS controller was added with
+        VirtualBox 3.2; USB mass storage devices are supported since
+        VirtualBox 5.0; NVMe controller support was added with VirtualBox 5.1.</p></div><div class="footnote"><p><sup>[<a name="ftn.idm2387" href="#idm2387">22</a>] </sup>The assignment of the machine's CD/DVD drive to the
+              secondary master was fixed before VirtualBox 3.1; it is now
+              changeable, and the drive can be at other slots of the IDE
+              controller, and there can be more than one such drive.</p></div><div class="footnote"><p><sup>[<a name="ftn.idm2401" href="#idm2401">23</a>] </sup>VirtualBox recommends the Intel Matrix Storage drivers
+                  which can be downloaded from <a href="http://downloadcenter.intel.com/Product_Filter.aspx?ProductID=2101" target="_top">http://downloadcenter.intel.com/Product_Filter.aspx?ProductID=2101</a>.</p></div><div class="footnote"><p><sup>[<a name="ftn.idm2430" href="#idm2430">24</a>] </sup>The NVMe controller is part of the extension pack.</p></div><div class="footnote"><p><sup>[<a name="ftn.idm2454" href="#idm2454">25</a>] </sup>Image resizing was added with VirtualBox 4.0.</p></div><div class="footnote"><p><sup>[<a name="ftn.idm2462" href="#idm2462">26</a>] </sup>Initial support for VMDK was added with VirtualBox 1.4;
+              since version 2.1, VirtualBox supports VMDK fully, meaning that
+              you can create snapshots and use all the other advanced features
+              described above for VDI images with VMDK also.</p></div><div class="footnote"><p><sup>[<a name="ftn.idm2468" href="#idm2468">27</a>] </sup>Support was added with VirtualBox 3.1.</p></div><div class="footnote"><p><sup>[<a name="ftn.idm2543" href="#idm2543">28</a>] </sup>This restriction is more lenient now than it was before
+            VirtualBox 2.2. Previously, each "normal" disk image could only be
+            <span class="emphasis"><em>attached</em></span> to one single machine. Now it can be
+            attached to more than one machine so long as only one of these
+            machines is running.</p></div><div class="footnote"><p><sup>[<a name="ftn.idm2566" href="#idm2566">29</a>] </sup>This behavior also changed with VirtualBox 2.2. Previously,
+            the differencing images were discarded when the machine session
+            <span class="emphasis"><em>ended</em></span>; now they are discarded every time the
+            machine is powered on.</p></div></div></div></body></html>
+¼[BHÄ      X£PX£P=p¥ŽX§Š   ,    :https://www.virtualbox.org/manual/ch05.html security-info FnhllAKWRHGAlo+ESXykKAAAAAAAAAAAwAAAAAAAAEaphjojH6pBabDSgSnsfLHeAAQAAgAAAAAAAAAAAAAAAAAAAAAB4vFIJp5wRkeyPxAQ9RJGKPqbqVvKO0mKuIl8ec8o/uhmCjImkVxP+7sgiYWmMt8F+O2DZM7ZTG6GukivU8OT5gAAAAAAAAaOMIIGijCCBXKgAwIBAgIQGamPNXDjZn8smv0r9kdD3TANBgkqhkiG9w0BAQsFADBoMQswCQYDVQQGEwJVUzEbMBkGA1UEChMST3JhY2xlIENvcnBvcmF0aW9uMR8wHQYDVQQLExZTeW1hbnRlYyBUcnVzdCBOZXR3b3JrMRswGQYDVQQDExJPcmFjbGUgU1NMIENBIC0gRzIwHhcNMTYwOTE1MDAwMDAwWhcNMTcwOTE2MjM1OTU5WjCBkzELMAkGA1UEBhMCVVMxEzARBgNVBAgMCkNhbGlmb3JuaWExFTATBgNVBAcMDFJlZHdvb2QgQ2l0eTEbMBkGA1UECgwST3JhY2xlIENvcnBvcmF0aW9uMR4wHAYDVQQLDBVQRElUIE5ldHdvcmsgU2VydmljZXMxGzAZBgNVBAMMEnd3dy52aXJ0dWFsYm94Lm9yZzCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAO4nnqK/b4d3tbz3KSdZZZL2uqmWNWNy2LOPPrhFAkEP5BGn9wNo4WiLxjMmoUDrvsym2ymLDO3a8k64gwMlddEFrw8OXPISMLiUTJXTy6ZUfxLOHiyW3ldLwVUUiLD21H4PjoXODKWhkTE5vsBr3c1UO9AMtB835e3on2uIacaji2aJFiKcT4XX1v6ZP0wHsna2/9GHYLSVdsJIwONmjT8/DFpsMwANWx3M5xsQn1gUMRXYKgrRwugw82QV3Vcj7giWbJE96lretYJuA+zLN7+5cUg1uGyerVZOo/NK3GerQmrf2f4bm0pXXH5pBbmk6haljljMb2kQGkEy2f3wFbsCAwEAAaOCAwIwggL+MFsGA1UdEQRUMFKCFWZvcnVtcy52aXJ0dWFsYm94Lm9yZ4IVdXBkYXRlLnZpcnR1YWxib3gub3Jngg52aXJ0dWFsYm94Lm9yZ4ISd3d3LnZpcnR1YWxib3gub3JnMAkGA1UdEwQCMAAwHQYDVR0OBBYEFCAeOwNKBEVhD4nGnVA1ZYoQgaS5MB8GA1UdIwQYMBaAFGCMZpFfSchVH+a1mgx6V2VzOLSiMA4GA1UdDwEB/wQEAwIFoDAdBgNVHSUEFjAUBggrBgEFBQcDAQYIKwYBBQUHAwIwOgYDVR0gBDMwMTAvBgZngQwBAgIwJTAjBggrBgEFBQcCARYXaHR0cHM6Ly9kLnN5bWNiLmNvbS9jcHMwUwYDVR0fBEwwSjBIoEagRIZCaHR0cDovL21zc2wtY3JsLndzLnN5bWFudGVjLmNvbS9Qcml2YXRlQ0EvNDQwNTI1MzY5LVJTQS1TSEEyNTYuY3JsMIGNBggrBgEFBQcBAQSBgDB+MCwGCCsGAQUFBzABhiBodHRwOi8vbXNzbC1vY3NwLndzLnN5bWFudGVjLmNvbTBOBggrBgEFBQcwAoZCaHR0cDovL21zc2wtYWlhLndzLnN5bWFudGVjLmNvbS9Qcml2YXRlQ0EvNDQwNTI1MzY5LVJTQS1TSEEyNTYuY2VyMIIBAgYKKwYBBAHWeQIEAgSB8wSB8ADuAHUA3esdK3oNT6Ygi4GtgWhwfi6OnQHVXIiNPRHEzbbsvswAAAFXLQr87QAABAMARjBEAiBsQIj2BwvBHTM6wpr/PeTX21W7Fgt78yZiPwgAVHuGRgIgIBwjJkagfuQErGGddBGQCfRTQwBkh2bPqsEncUzZftYAdQCkuQmQtBhYFIe7E6LMZ3AKPDWYBPkb37jjd80OyA3cEAAAAVctCv4tAAAEAwBGMEQCH2vikTCxvKGyXMGwAzfD650egY26HaLuRTRBxbcPaNoCIQDNRyDb/0eT8s29IJYVHn6wta3ymkmb0fGiFwXZNhR8CzANBgkqhkiG9w0BAQsFAAOCAQEAT1VgvAbq5FtLF1fZPGBluz8Dlo+SKatjqppmJ+cKbVvCR2+CrXqxJejN/gbinG9gqEoXmda/fDXFLIjk+E4usLzY2XkA0vMzkJ5JZZI4FcXavvPtltqXNbImfJ8+3xtrECxw1+vrKF/rUWt6Sw0AyWdHJOv68lX2ok1FW90CPv9Z7fvmeLlVDW5EN62nEZ5chLEsfh20PdlQiGzbzqShPzHt11WEc8rzv8070W1QdK30jXO6ZXi3eQyeNdSfh/ltbTBIDS3Aq9+C4Wk8vc5EsK7OgkKT0921dqxEMftK2yOo2bWxcXp+yzpnshf6xDg7Yci2Bykaz5OakopQmzQkgcAvAAMAAAAAAQEAAA== request-method GET response-head HTTP/1.1 200 OK
+Date: Tue, 14 Feb 2017 18:40:36 GMT
+Server: Oracle-Application-Server-11g
+Last-Modified: Tue, 17 Jan 2017 12:42:14 GMT
+Etag: "2b4008-dc44-54649a12a1580"
+Accept-Ranges: bytes
+Content-Length: 56388
+Content-Type: text/html
+Content-Language: en
+ uncompressed-len 0   ÜD

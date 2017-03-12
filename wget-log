@@ -1,0 +1,81 @@
+--2017-02-13 17:31:44--  https://guttenberg.org/files/2600/2600-0.txt
+Resolving guttenberg.org (guttenberg.org)... 85.159.233.44
+Connecting to guttenberg.org (guttenberg.org)|85.159.233.44|:443... failed: Connection timed out.
+Retrying.
+
+--2017-02-13 17:33:52--  (try: 2)  https://guttenberg.org/files/2600/2600-0.txt
+Connecting to guttenberg.org (guttenberg.org)|85.159.233.44|:443... failed: Connection timed out.
+Retrying.
+
+--2017-02-13 17:36:01--  (try: 3)  https://guttenberg.org/files/2600/2600-0.txt
+Connecting to guttenberg.org (guttenberg.org)|85.159.233.44|:443... failed: Connection timed out.
+Retrying.
+
+--2017-02-13 17:38:12--  (try: 4)  https://guttenberg.org/files/2600/2600-0.txt
+Connecting to guttenberg.org (guttenberg.org)|85.159.233.44|:443... failed: Connection timed out.
+Retrying.
+
+--2017-02-13 17:40:23--  (try: 5)  https://guttenberg.org/files/2600/2600-0.txt
+Connecting to guttenberg.org (guttenberg.org)|85.159.233.44|:443... failed: Connection timed out.
+Retrying.
+
+--2017-02-13 17:42:35--  (try: 6)  https://guttenberg.org/files/2600/2600-0.txt
+Connecting to guttenberg.org (guttenberg.org)|85.159.233.44|:443... failed: Connection timed out.
+Retrying.
+
+--2017-02-13 17:44:49--  (try: 7)  https://guttenberg.org/files/2600/2600-0.txt
+Connecting to guttenberg.org (guttenberg.org)|85.159.233.44|:443... failed: Connection timed out.
+Retrying.
+
+--2017-02-13 17:47:03--  (try: 8)  https://guttenberg.org/files/2600/2600-0.txt
+Connecting to guttenberg.org (guttenberg.org)|85.159.233.44|:443... failed: Connection timed out.
+Retrying.
+
+--2017-02-13 17:49:18--  (try: 9)  https://guttenberg.org/files/2600/2600-0.txt
+Connecting to guttenberg.org (guttenberg.org)|85.159.233.44|:443... failed: Connection timed out.
+Retrying.
+
+--2017-02-13 17:51:34--  (try:10)  https://guttenberg.org/files/2600/2600-0.txt
+Connecting to guttenberg.org (guttenberg.org)|85.159.233.44|:443... failed: Connection timed out.
+Retrying.
+
+--2017-02-13 17:53:52--  (try:11)  https://guttenberg.org/files/2600/2600-0.txt
+Connecting to guttenberg.org (guttenberg.org)|85.159.233.44|:443... failed: Connection timed out.
+Retrying.
+
+--2017-02-13 17:56:09--  (try:12)  https://guttenberg.org/files/2600/2600-0.txt
+Connecting to guttenberg.org (guttenberg.org)|85.159.233.44|:443... failed: Connection timed out.
+Retrying.
+
+--2017-02-13 17:58:26--  (try:13)  https://guttenberg.org/files/2600/2600-0.txt
+Connecting to guttenberg.org (guttenberg.org)|85.159.233.44|:443... failed: Connection timed out.
+Retrying.
+
+--2017-02-13 18:00:43--  (try:14)  https://guttenberg.org/files/2600/2600-0.txt
+Connecting to guttenberg.org (guttenberg.org)|85.159.233.44|:443... failed: Connection timed out.
+Retrying.
+
+--2017-02-13 18:03:01--  (try:15)  https://guttenberg.org/files/2600/2600-0.txt
+Connecting to guttenberg.org (guttenberg.org)|85.159.233.44|:443... failed: Connection timed out.
+Retrying.
+
+--2017-02-13 18:05:18--  (try:16)  https://guttenberg.org/files/2600/2600-0.txt
+Connecting to guttenberg.org (guttenberg.org)|85.159.233.44|:443... failed: Connection timed out.
+Retrying.
+
+--2017-02-13 20:52:32--  (try:17)  https://guttenberg.org/files/2600/2600-0.txt
+Connecting to guttenberg.org (guttenberg.org)|85.159.233.44|:443... failed: Connection timed out.
+Retrying.
+
+--2017-02-13 20:54:49--  (try:18)  https://guttenberg.org/files/2600/2600-0.txt
+Connecting to guttenberg.org (guttenberg.org)|85.159.233.44|:443... failed: Connection timed out.
+Retrying.
+
+--2017-02-13 20:57:07--  (try:19)  https://guttenberg.org/files/2600/2600-0.txt
+Connecting to guttenberg.org (guttenberg.org)|85.159.233.44|:443... failed: Connection timed out.
+Retrying.
+
+--2017-02-13 20:59:24--  (try:20)  https://guttenberg.org/files/2600/2600-0.txt
+Connecting to guttenberg.org (guttenberg.org)|85.159.233.44|:443... failed: Connection timed out.
+Giving up.
+

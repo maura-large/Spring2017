@@ -1,0 +1,5 @@
+#! /bin/bash
+# This is a basic "Hello, World" script
+echo -n "Please enter your name:"
+read name
+echo "Nice to meet you, $name"
