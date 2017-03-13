@@ -267,3 +267,123 @@ ls -l
 tar -xvzf packagedfiles.tar.gz
 ls -l
 pwd
+sudo yum install git-all
+git config --global user.name "Maya Large"
+git config --global user.email maura.large@gmail.com
+ git config --list
+cd /home/user/my_repository
+cd /home/user/your_repository
+git add *.c
+git add LICENSE
+git commit -m 'initial project version'
+git init
+git add *.c
+cd /home/user/your_repository
+git init
+git add *.c
+git add LICENSE
+git commit -m 'initial project version'
+git add
+git add .
+touch lab_6.txt
+ls -l
+git add
+ git commit -m 'initial project version'
+git status
+git clone
+git status
+git add lab_6.txt
+git add Desktop/lab_6.txt
+git status
+git status -s
+git diff
+git diff --staged
+git commit
+git commit -m
+git commit
+git status
+git commit
+git status
+git commit -m
+--all
+git status
+git commit -m lab_6.txt
+git status
+git log --since=2.weeks
+touch large.txt
+git status
+git commit large.txt
+git add large.txt
+git add Desktop/large.txt
+git status
+git commit -m large.txt
+git status
+git log --stat
+git clone
+cd
+cd /desktop
+cd ~Desktop
+git status
+git clone https://github.com/mules/INFO-246.13.FA16
+git status
+cd /home/user/my_repository
+cd /home/user/your_repository
+cd -ls
+git status
+sudo yum install git-all
+git clone git://git.kernel.org/pub/scm/git/git.git
+cd /home/student/my_repository
+git init
+git status
+git add git/
+git add lab6_.txt
+git add lab_6.txt
+git add large.txt
+git status
+sudo yum install git-all
+cd home/student/my_repository
+git init
+git status
+git add lab_6.txt
+git add large.txt
+git status
+git commit -m lab_6.txt
+git commit -m large.txt
+git log
+git clone https://github.com/maura-large/Spring2017/labs
+git clone https://github.com/maura-large/Spring2017
+git status
+cat .gitignore
+*.cache
+*-
+sudo yum unistall git-all
+git status
+git config --list
+git config user.name
+git help <uninstall>
+git unistall --help
+man git -uninstall
+git gc
+git status
+git man
+man git
+git-clean
+man git
+git clean
+git status
+man git
+git commit
+git commit -m
+git commit -a
+git status
+git push 
+sudo yum install git-all
+git config user.name
+git init
+cd /home/student/my_repository
+git init
+cd  /home
+git init
+cd /home/student
+git init
+git status
